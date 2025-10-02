@@ -58,11 +58,9 @@
   .hidden{ display:none !important; }
 </style>
 
-<!-- =========================
-     Supabase SDK (CDN)
-     Place it in <head> so it's available before inline scripts in body end.
-     ========================= -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+<script>const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);</script>
+
 
 </head>
 <body>
@@ -359,7 +357,7 @@
 const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co'; // <-- replace
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM'; // <-- replace
 /* ========================= */
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 
 /*
