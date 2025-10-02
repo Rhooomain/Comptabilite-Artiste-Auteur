@@ -347,8 +347,8 @@
                 </div>
                 
                 <div style="margin-top: 20px;">
-                    <button class="btn" id="submitBtn" type="button">Ajouter</button>
-                    <button class="btn btn-danger" id="cancelBtn" type="button" style="display: none;">Annuler</button>
+                    <button class="btn" id="submitBtn">Ajouter</button>
+                    <button class="btn btn-danger" id="cancelBtn" style="display: none;">Annuler</button>
                 </div>
             </div>
             
@@ -539,7 +539,6 @@
                             <option value="csv">CSV</option>
                             <option value="json">JSON</option>
                             <option value="excel">Excel (TSV)</option>
-                            <option value="pdf">PDF</option>
                         </select>
                     </div>
                     <div class="form-col">
@@ -551,12 +550,12 @@
                         </select>
                     </div>
                 </div>
-                <button class="btn" id="exportBtn" type="button">💾 Exporter</button>
+                <button class="btn" id="exportBtn">💾 Exporter</button>
             </div>
             
             <div class="card">
                 <h3>📄 Export synthèse fiscale</h3>
-                <button class="btn btn-info" id="exportFiscalBtn" type="button">📄 Exporter la synthèse (TXT)</button>
+                <button class="btn btn-info" id="exportFiscalBtn">📄 Exporter la synthèse (TXT)</button>
             </div>
         </section>
         
@@ -592,10 +591,10 @@
             <div class="card">
                 <h3>🗂️ Gestion des données</h3>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-success" id="exportJsonBtn" type="button">💾 Sauvegarder JSON</button>
-                    <button class="btn btn-info" id="importBtn" type="button">📁 Importer JSON</button>
+                    <button class="btn btn-success" id="exportJsonBtn">💾 Sauvegarder JSON</button>
+                    <button class="btn btn-info" id="importBtn">📁 Importer JSON</button>
                     <input type="file" id="importFile" accept=".json" style="display: none;" />
-                    <button class="btn btn-danger" id="clearBtn" type="button">🗑️ Effacer toutes les données</button>
+                    <button class="btn btn-danger" id="clearBtn">🗑️ Effacer toutes les données</button>
                 </div>
             </div>
         </section>
@@ -755,7 +754,7 @@
             };
             
             if (editId) {
-                const idx = entries.findIndex(e => String(e.id) === String(editId));
+                const idx = entries.findIndex(e => e.id === editId);
                 if (idx > -1) entries[idx] = item;
                 editId = null;
                 $('cancelBtn').style.display = 'none';
@@ -789,71 +788,45 @@
             $('cancelBtn').style.display = 'none';
         }
         
-        // --- RENDER ENTRIES (corrigé, boutons type=button + data-id) ---
+        // Affichage des entrées
         function renderEntries() {
             const root = $('entriesList');
             root.innerHTML = '';
-
+            
             if (entries.length === 0) {
-                root.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Aucune entrée pour l\\'instant</div>';
+                root.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Aucune entrée pour l\'instant</div>';
                 return;
             }
-
+            
             const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
-
+            
             sorted.forEach(e => {
                 const div = document.createElement('div');
                 div.className = 'entry';
-
+                
                 const isRecette = e.type.startsWith('recette');
                 const amountClass = isRecette ? 'amount-positive' : 'amount-negative';
                 const displayAmount = isRecette ? e.amount : -e.amount;
-
-                // Info
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'entry-info';
-                infoDiv.innerHTML = `
-                    <div class="entry-date">${new Date(e.date).toLocaleDateString('fr-FR')}</div>
-                    <div class="entry-description">${escapeHtml(e.description || 'Sans description')} • ${e.category || '—'}</div>
-                    ${e.hasTVA ? '<small style="color: #0066cc;">TVA 20%</small>' : ''}
+                
+                div.innerHTML = `
+                    <div class="entry-info">
+                        <div class="entry-date">${new Date(e.date).toLocaleDateString('fr-FR')}</div>
+                        <div class="entry-description">${escapeHtml(e.description || 'Sans description')} • ${e.category || '—'}</div>
+                        ${e.hasTVA ? '<small style="color: #0066cc;">TVA 20%</small>' : ''}
+                    </div>
+                    <div class="entry-actions">
+                        <div class="${amountClass}">${fmt(displayAmount)}</div>
+                        <button class="btn btn-warning btn-sm" onclick="startEdit('${e.id}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="removeEntry('${e.id}')">🗑️</button>
+                    </div>
                 `;
-
-                // Actions
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'entry-actions';
-
-                const amountDiv = document.createElement('div');
-                amountDiv.className = amountClass;
-                amountDiv.textContent = fmt(displayAmount);
-
-                // Boutons avec data-id et type="button"
-                const editBtn = document.createElement('button');
-                editBtn.className = 'btn btn-warning btn-sm';
-                editBtn.type = 'button';
-                editBtn.setAttribute('data-action', 'edit');
-                editBtn.setAttribute('data-id', String(e.id));
-                editBtn.textContent = '✏️';
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'btn btn-danger btn-sm';
-                deleteBtn.type = 'button';
-                deleteBtn.setAttribute('data-action', 'delete');
-                deleteBtn.setAttribute('data-id', String(e.id));
-                deleteBtn.textContent = '🗑️';
-
-                actionsDiv.appendChild(amountDiv);
-                actionsDiv.appendChild(editBtn);
-                actionsDiv.appendChild(deleteBtn);
-
-                div.appendChild(infoDiv);
-                div.appendChild(actionsDiv);
-
+                
                 root.appendChild(div);
             });
         }
         
         function startEdit(id) {
-            const e = entries.find(x => String(x.id) === String(id));
+            const e = entries.find(x => x.id === id);
             if (!e) return;
             
             editId = id;
@@ -880,16 +853,11 @@
             window.scrollTo(0, 0);
         }
         
-        // Fonction removeEntry tolérante aux types d'ID (string/number)
         function removeEntry(id) {
             if (!confirm('Supprimer cette entrée ?')) return;
-            entries = entries.filter(e => String(e.id) !== String(id));
+            entries = entries.filter(e => e.id !== id);
             saveStore();
         }
-        
-        // expose (optionnel) pour compatibilité si appelé ailleurs
-        window.startEdit = startEdit;
-        window.removeEntry = removeEntry;
         
         // Historique filtré
         const filterEls = ['filterPeriod', 'filterType'].map(id => $(id));
@@ -1043,8 +1011,6 @@
                 exportCSV(filtered);
             } else if (format === 'excel') {
                 exportTSV(filtered);
-            } else if (format === 'pdf') {
-                exportPDF(filtered);
             } else {
                 exportJSON(filtered);
             }
@@ -1086,105 +1052,6 @@
         
         function exportJSON(data) {
             downloadFile(JSON.stringify(data, null, 2), `export_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
-        }
-        
-        function exportPDF(data) {
-            if (!window.jspdf || !window.jspdf.jsPDF) {
-                alert('⚠️ Bibliothèque PDF non chargée. Export en CSV à la place.');
-                exportCSV(data);
-                return;
-            }
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Titre
-            doc.setFontSize(18);
-            doc.text('Comptabilite Artiste-Auteur BNC', 15, 20);
-            doc.setFontSize(11);
-            doc.text(`Date d'export: ${new Date().toLocaleDateString('fr-FR')}`, 15, 28);
-            doc.text(`Nombre d'operations: ${data.length}`, 15, 34);
-            
-            let y = 45;
-            
-            // Recettes
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('RECETTES', 15, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            
-            const recettes = data.filter(e => e.type.startsWith('recette'));
-            if (recettes.length === 0) {
-                doc.text('Aucune recette', 15, y);
-                y += 6;
-            } else {
-                recettes.forEach(e => {
-                    if (y > 270) {
-                        doc.addPage();
-                        y = 20;
-                    }
-                    const tva = e.hasTVA ? ` (TVA: ${e.tva.toFixed(2)} €)` : '';
-                    const line = `${e.date} - ${e.type} - ${e.amount.toFixed(2)} € ${tva} - ${e.description || ''}`;
-                    doc.text(line, 15, y);
-                    y += 6;
-                });
-            }
-            
-            y += 5;
-            
-            // Dépenses
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('DEPENSES', 15, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            
-            const depenses = data.filter(e => e.type === 'depense');
-            if (depenses.length === 0) {
-                doc.text('Aucune depense', 15, y);
-                y += 6;
-            } else {
-                depenses.forEach(e => {
-                    if (y > 270) {
-                        doc.addPage();
-                        y = 20;
-                    }
-                    const tva = e.hasTVA ? ` (TVA: ${e.tva.toFixed(2)} €)` : '';
-                    const line = `${e.date} - ${e.category} - ${e.amount.toFixed(2)} € ${tva} - ${e.description || ''}`;
-                    doc.text(line, 15, y);
-                    y += 6;
-                });
-            }
-            
-            // Totaux
-            y += 10;
-            if (y > 250) {
-                doc.addPage();
-                y = 20;
-            }
-            
-            doc.setFontSize(14);
-            doc.setFont(undefined, 'bold');
-            doc.text('TOTAUX', 15, y);
-            y += 8;
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'normal');
-            
-            const totalRecettes = recettes.reduce((s, e) => s + e.amount, 0);
-            const totalDepenses = depenses.reduce((s, e) => s + e.amount, 0);
-            const solde = totalRecettes - totalDepenses;
-            
-            doc.text(`Total recettes: ${totalRecettes.toFixed(2)} €`, 15, y);
-            y += 6;
-            doc.text(`Total depenses: ${totalDepenses.toFixed(2)} €`, 15, y);
-            y += 6;
-            doc.text(`Solde: ${solde.toFixed(2)} €`, 15, y);
-            
-            doc.save(`comptabilite_${new Date().toISOString().slice(0, 10)}.pdf`);
-            alert('✅ PDF exporté !');
         }
         
         function downloadFile(content, filename, mime) {
@@ -1292,25 +1159,6 @@ COTISATIONS SOCIALES:
         $('tauxCotisations').addEventListener('change', computeSummaries);
         $('tauxIRCEC').addEventListener('change', computeSummaries);
         $('regimeFiscal').addEventListener('change', computeSummaries);
-        
-        // Delegation click handler pour entriesList (edit / delete)
-        // placé avant renderAll pour être prêt après rendu
-        (function attachDelegation() {
-            const container = $('entriesList');
-            if (!container) return;
-            container.addEventListener('click', function(ev) {
-                const btn = ev.target.closest('button[data-action]');
-                if (!btn) return;
-                const action = btn.getAttribute('data-action');
-                const id = btn.getAttribute('data-id');
-                if (!id) return;
-                if (action === 'delete') {
-                    removeEntry(id);
-                } else if (action === 'edit') {
-                    startEdit(id);
-                }
-            });
-        })();
         
         // Render all
         function renderAll() {
