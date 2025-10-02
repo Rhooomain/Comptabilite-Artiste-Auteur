@@ -1,1184 +1,859 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comptabilité Artiste-Auteur BNC</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(6px);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 { font-size: 2em; margin-bottom: 10px; }
-        .header p { opacity: 0.9; font-size: 1.1em; }
-        
-        .tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            overflow-x: auto;
-            flex-wrap: wrap;
-        }
-        
-        .tab-btn {
-            padding: 15px 25px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 1em;
-            font-weight: 500;
-            color: #6c757d;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-        
-        .tab-btn:hover { background: #e9ecef; }
-        .tab-btn[aria-selected="true"] {
-            color: #667eea;
-            border-bottom: 3px solid #667eea;
-            background: white;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 30px;
-            animation: fadeIn 0.3s;
-        }
-        
-        .tab-content.active { display: block; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .form-col { flex: 1; min-width: 200px; }
-        
-        .card {
-            background: rgba(102, 126, 234, 0.05);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-            transition: border 0.3s;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-right: 10px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-success { background: linear-gradient(135deg, #28a745, #20c997); }
-        .btn-danger { background: linear-gradient(135deg, #dc3545, #c0392b); }
-        .btn-warning { background: linear-gradient(135deg, #ffc107, #ff9800); color: #000; }
-        .btn-info { background: linear-gradient(135deg, #17a2b8, #138496); }
-        .btn-sm { padding: 8px 16px; font-size: 0.9em; }
-        
-        .summary-card {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .summary-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .summary-item h4 { font-size: 0.9em; opacity: 0.9; margin-bottom: 8px; }
-        .summary-item div { font-size: 1.4em; font-weight: 700; }
-        
-        .entries-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            background: white;
-            margin-top: 15px;
-        }
-        
-        .entry {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s;
-        }
-        
-        .entry:hover { background: rgba(102, 126, 234, 0.03); }
-        .entry-info { flex: 1; }
-        .entry-date { font-weight: 700; color: #667eea; margin-bottom: 5px; }
-        .entry-description { color: #666; font-size: 0.9em; }
-        .entry-actions { display: flex; gap: 8px; align-items: center; }
-        
-        .amount-positive { color: #27ae60; font-weight: 700; font-size: 1.1em; }
-        .amount-negative { color: #e74c3c; font-weight: 700; font-size: 1.1em; }
-        
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .alert-info {
-            background: rgba(52, 152, 219, 0.1);
-            border-left: 4px solid #3498db;
-            color: #1b6ea8;
-        }
-        
-        .alert-warning {
-            background: rgba(255, 193, 7, 0.1);
-            border-left: 4px solid #ffc107;
-            color: #856404;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .checkbox-group input[type="checkbox"] { width: auto; cursor: pointer; }
-        .checkbox-group label { margin: 0; font-weight: 400; cursor: pointer; }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        th {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-        }
-        
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        tr:hover { background: #f8f9fa; }
-        
-        .tva-section {
-            background: rgba(0, 102, 204, 0.05);
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid #0066cc;
-            margin: 20px 0;
-        }
-        
-        .hidden { display: none !important; }
-        
-        @media (max-width: 768px) {
-            .form-row { flex-direction: column; }
-            .tabs { flex-direction: column; }
-            .summary-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Comptabilité Artiste-Auteur - Supabase</title>
+
+<!-- =========================
+     Styles (conserve ton UI)
+     ========================= -->
+<style>
+  * {box-sizing: border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height:1.6; color:#333;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh; -webkit-font-smoothing:antialiased; padding:20px;
+  }
+  .container{max-width:1400px;margin:0 auto;padding:20px}
+  .header{background:rgba(255,255,255,0.95);backdrop-filter: blur(6px);padding:24px;border-radius:16px;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,0,0,0.08);text-align:center}
+  .header h1{color:#2c3e50;font-size:1.9rem;margin-bottom:6px}
+  .header p{color:#666;font-size:1rem}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+  .tab-btn{background:rgba(255,255,255,0.9); border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600;color:#444;transition:all .18s}
+  .tab-btn[aria-selected="true"]{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,0.12)}
+  .tab-btn:focus{outline:3px solid rgba(102,126,234,0.18)}
+  .tab-content{display:none;background:rgba(255,255,255,0.95);backdrop-filter:blur(6px);padding:22px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.08)}
+  .tab-content.active{display:block}
+  .form-row{display:flex;gap:12px;align-items:flex-end;padding:12px;border-radius:10px}
+  .form-row.card{background:rgba(102,126,234,0.05);border-left:4px solid #667eea;margin-bottom:12px}
+  .form-col{flex:1;min-width:150px}
+  label{display:block;margin-bottom:6px;font-weight:600;color:#2c3e50}
+  input,select,textarea,button{font-family:inherit}
+  input,select,textarea{width:100%;padding:10px;border:1px solid #e0e0e0;border-radius:8px;font-size:14px;transition:box-shadow .15s, border-color .15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 4px rgba(102,126,234,0.08)}
+  .btn{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:0;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+  .btn:active{transform:translateY(1px)}
+  .btn-danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+  .summary-card{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:18px;border-radius:12px;margin:14px 0}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+  .summary-item{background:rgba(255,255,255,0.08);padding:12px;border-radius:8px;text-align:center}
+  .entries-list{max-height:360px;overflow:auto;border:1px solid #e0e0e0;border-radius:10px;margin-top:12px;background:#fff}
+  .entry{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #f0f0f0}
+  .entry:hover{background:rgba(102,126,234,0.03)}
+  .entry-info{flex:1}
+  .entry-date{font-weight:700;color:#667eea}
+  .amount-positive{color:#27ae60;font-weight:700}
+  .amount-negative{color:#e74c3c;font-weight:700}
+  .config-section{background:rgba(102,126,234,0.03);padding:12px;border-radius:10px;margin-bottom:12px}
+  .help-section{background:rgba(39,174,96,0.05);border-left:4px solid #27ae60;padding:12px;border-radius:6px;margin-bottom:12px}
+  .alert{padding:12px;border-radius:8px;margin-bottom:12px}
+  .alert-info{background:rgba(52,152,219,0.08);border-left:4px solid #3498db;color:#1b6ea8}
+  @media (max-width:768px){ .form-row{flex-direction:column;align-items:stretch} .tabs{flex-direction:column} }
+  /* small helper */
+  .muted { color:#666; font-size:0.95rem }
+  .small { font-size:0.85rem; color:#666 }
+  .hidden{ display:none !important; }
+</style>
+
+<!-- =========================
+     Supabase SDK (CDN)
+     Place it in <head> so it's available before inline scripts in body end.
+     ========================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>💼 Comptabilité Artiste-Auteur</h1>
-            <p>Gestion BNC avec TVA - Déclaration 2042-C-PRO</p>
-        </div>
-        
-        <div class="tabs" role="tablist">
-            <button class="tab-btn" role="tab" aria-controls="saisie" aria-selected="true">📊 Saisie</button>
-            <button class="tab-btn" role="tab" aria-controls="historique" aria-selected="false">📈 Historique</button>
-            <button class="tab-btn" role="tab" aria-controls="synthese" aria-selected="false">📋 Synthèse</button>
-            <button class="tab-btn" role="tab" aria-controls="declaration" aria-selected="false">📄 Déclaration</button>
-            <button class="tab-btn" role="tab" aria-controls="export" aria-selected="false">💾 Export</button>
-            <button class="tab-btn" role="tab" aria-controls="parametres" aria-selected="false">⚙️ Paramètres</button>
-            <button class="tab-btn" role="tab" aria-controls="aide" aria-selected="false">❓ Aide</button>
-        </div>
-        
-        <!-- Saisie -->
-        <section id="saisie" class="tab-content active" role="tabpanel">
-            <h2>Saisie des recettes et dépenses</h2>
-            
-            <div class="card">
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="entryDate">Date *</label>
-                        <input type="date" id="entryDate" required />
-                    </div>
-                    <div class="form-col">
-                        <label for="entryType">Type *</label>
-                        <select id="entryType" required>
-                            <option value="recette-bnc">Recette BNC (Droits d'auteur)</option>
-                            <option value="recette-ts">Recette TS (Traitements et salaires)</option>
-                            <option value="depense">Dépense déductible</option>
-                        </select>
-                    </div>
-                    <div class="form-col">
-                        <label for="entryAmount" id="amountLabel">Montant (€) *</label>
-                        <input type="number" id="entryAmount" step="0.01" placeholder="0.00" required />
-                    </div>
-                    <div class="form-col hidden" id="ttcGroup">
-                        <label for="entryAmountTTC">Montant TTC (€)</label>
-                        <input type="number" id="entryAmountTTC" step="0.01" readonly />
-                    </div>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="entryTVA" />
-                    <label for="entryTVA">TVA à 20%</label>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="entryDescription">Description</label>
-                        <input type="text" id="entryDescription" placeholder="Description de l'opération" />
-                    </div>
-                    <div class="form-col">
-                        <label for="entryCategory">Catégorie</label>
-                        <select id="entryCategory">
-                            <option value="">Sélectionner...</option>
-                            <optgroup label="Recettes BNC">
-                                <option value="droits-auteur">Droits d'auteur</option>
-                                <option value="commissions">Commissions</option>
-                                <option value="autres-bnc">Autres revenus BNC</option>
-                            </optgroup>
-                            <optgroup label="Recettes TS">
-                                <option value="salaires">Salaires</option>
-                                <option value="cachets">Cachets</option>
-                            </optgroup>
-                            <optgroup label="Dépenses">
-                                <option value="materiel">Matériel</option>
-                                <option value="transport">Transport</option>
-                                <option value="formation">Formation</option>
-                                <option value="cotisations">Cotisation sociale</option>
-                                <option value="licences">Licences</option>
-                                <option value="abonnement">Abonnement</option>
-                                <option value="divers">Divers</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="checkbox-group" id="recurrentField" style="display: none;">
-                    <input type="checkbox" id="entryRecurrent" />
-                    <label for="entryRecurrent">Dépense mensuelle récurrente</label>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <button class="btn" id="submitBtn">Ajouter</button>
-                    <button class="btn btn-danger" id="cancelBtn" style="display: none;">Annuler</button>
-                </div>
-            </div>
-            
-            <h3>Dernières opérations</h3>
-            <div class="entries-list" id="entriesList"></div>
-        </section>
-        
-        <!-- Historique -->
-        <section id="historique" class="tab-content" role="tabpanel">
-            <h2>Historique détaillé</h2>
-            
-            <div class="card">
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="filterPeriod">Période</label>
-                        <select id="filterPeriod">
-                            <option value="all">Toute la période</option>
-                            <option value="current-year">Année en cours</option>
-                            <option value="last-6-months">6 derniers mois</option>
-                            <option value="current-month">Mois en cours</option>
-                        </select>
-                    </div>
-                    <div class="form-col">
-                        <label for="filterType">Type</label>
-                        <select id="filterType">
-                            <option value="all">Tous types</option>
-                            <option value="recette-bnc">Recettes BNC</option>
-                            <option value="recette-ts">Recettes TS</option>
-                            <option value="depense">Dépenses</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="summary-card">
-                <h3>📊 Statistiques de la période</h3>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <h4>Opérations</h4>
-                        <div id="historyCount">0</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Total recettes</h4>
-                        <div id="historyRecettes">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Total dépenses</h4>
-                        <div id="historyDepenses">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Solde</h4>
-                        <div id="historySolde">0,00 €</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="entries-list" id="historyEntriesList"></div>
-        </section>
-        
-        <!-- Synthèse -->
-        <section id="synthese" class="tab-content" role="tabpanel">
-            <h2>Synthèse annuelle <span id="currentYear"></span></h2>
-            
-            <div class="summary-card">
-                <h3>📊 Résumé financier</h3>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <h4>Recettes BNC HT</h4>
-                        <div id="totalBNC">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>TVA collectée</h4>
-                        <div id="tvaCollectee">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Recettes TS</h4>
-                        <div id="totalTS">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Dépenses HT</h4>
-                        <div id="totalDepenses">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>TVA déductible</h4>
-                        <div id="tvaDeductible">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Bénéfice net</h4>
-                        <div id="beneficeNet">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Cotisations URSSAF</h4>
-                        <div id="cotisationsURSSAF">0,00 €</div>
-                    </div>
-                    <div class="summary-item">
-                        <h4>Cotisations IRCEC</h4>
-                        <div id="cotisationsIRCEC">0,00 €</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="tva-section">
-                <h3>💶 Bilan TVA</h3>
-                <div class="summary-grid">
-                    <div class="summary-item" style="background: white; color: #333;">
-                        <h4>TVA collectée</h4>
-                        <div id="tvaCollecteeSynthese">0,00 €</div>
-                    </div>
-                    <div class="summary-item" style="background: white; color: #333;">
-                        <h4>TVA déductible</h4>
-                        <div id="tvaDeductibleSynthese">0,00 €</div>
-                    </div>
-                    <div class="summary-item" style="background: white; color: #667eea;">
-                        <h4>TVA à payer</h4>
-                        <div id="tvaAPayer">0,00 €</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="alert alert-info">
-                <strong>📋 Régime fiscal :</strong> <span id="regimeInfo">Micro-BNC (abattement 34%)</span><br>
-                <strong>💰 Seuil micro-BNC :</strong> 77 700 € (2024)
-            </div>
-        </section>
-        
-        <!-- Déclaration -->
-        <section id="declaration" class="tab-content" role="tabpanel">
-            <h2>Montants à reporter</h2>
-            
-            <div class="card">
-                <h3>📄 Déclaration 2042-C-PRO</h3>
-                <table>
-                    <tr>
-                        <th>Case</th>
-                        <th>Description</th>
-                        <th>Montant</th>
-                    </tr>
-                    <tr>
-                        <td><strong>5QC / 5QI</strong></td>
-                        <td>Revenus BNC</td>
-                        <td id="case5QC">0,00 €</td>
-                    </tr>
-                    <tr>
-                        <td><strong>1GF / 1JF</strong></td>
-                        <td>Traitements et salaires</td>
-                        <td id="case1GF">0,00 €</td>
-                    </tr>
-                </table>
-            </div>
-            
-            <div class="tva-section">
-                <h3>💶 Déclaration CA3 (TVA)</h3>
-                <table>
-                    <tr>
-                        <th>Ligne</th>
-                        <th>Description</th>
-                        <th>Montant</th>
-                    </tr>
-                    <tr>
-                        <td><strong>TVA collectée</strong></td>
-                        <td>Sur ventes</td>
-                        <td id="tvaCollecteeCA3">0,00 €</td>
-                    </tr>
-                    <tr>
-                        <td><strong>TVA déductible</strong></td>
-                        <td>Sur achats</td>
-                        <td id="tvaDeductibleCA3">0,00 €</td>
-                    </tr>
-                    <tr>
-                        <td><strong>TVA à payer</strong></td>
-                        <td>Montant net</td>
-                        <td id="tvaAPayerCA3">0,00 €</td>
-                    </tr>
-                </table>
-            </div>
-        </section>
-        
-        <!-- Export -->
-        <section id="export" class="tab-content" role="tabpanel">
-            <h2>Export des données</h2>
-            
-            <div class="card">
-                <h3>📊 Export des opérations</h3>
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="exportFormat">Format</label>
-                        <select id="exportFormat">
-                            <option value="csv">CSV</option>
-                            <option value="json">JSON</option>
-                            <option value="excel">Excel (TSV)</option>
-                        </select>
-                    </div>
-                    <div class="form-col">
-                        <label for="exportPeriod">Période</label>
-                        <select id="exportPeriod">
-                            <option value="all">Toutes les données</option>
-                            <option value="current-year">Année en cours</option>
-                            <option value="last-year">Année précédente</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn" id="exportBtn">💾 Exporter</button>
-            </div>
-            
-            <div class="card">
-                <h3>📄 Export synthèse fiscale</h3>
-                <button class="btn btn-info" id="exportFiscalBtn">📄 Exporter la synthèse (TXT)</button>
-            </div>
-        </section>
-        
-        <!-- Paramètres -->
-        <section id="parametres" class="tab-content" role="tabpanel">
-            <h2>Paramètres</h2>
-            
-            <div class="card">
-                <h3>⚙️ Régime fiscal</h3>
-                <div class="form-col">
-                    <label for="regimeFiscal">Type de régime BNC</label>
-                    <select id="regimeFiscal">
-                        <option value="micro">Micro-BNC (abattement 34%)</option>
-                        <option value="reel">Déclaration contrôlée (frais réels)</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>💼 Taux de cotisations</h3>
-                <div class="form-row">
-                    <div class="form-col">
-                        <label for="tauxCotisations">Taux URSSAF (%)</label>
-                        <input type="number" id="tauxCotisations" value="17.5" step="0.01" />
-                    </div>
-                    <div class="form-col">
-                        <label for="tauxIRCEC">Taux IRCEC - RAAP (%)</label>
-                        <input type="number" id="tauxIRCEC" value="8.00" step="0.01" />
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>🗂️ Gestion des données</h3>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn btn-success" id="exportJsonBtn">💾 Sauvegarder JSON</button>
-                    <button class="btn btn-info" id="importBtn">📁 Importer JSON</button>
-                    <input type="file" id="importFile" accept=".json" style="display: none;" />
-                    <button class="btn btn-danger" id="clearBtn">🗑️ Effacer toutes les données</button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Aide -->
-        <section id="aide" class="tab-content" role="tabpanel">
-            <h2>Mode d'emploi</h2>
-            
-            <div class="card">
-                <h3>🎯 Objectif</h3>
-                <p>Cette application vous aide à gérer votre comptabilité BNC en tant qu'artiste-auteur. Elle calcule automatiquement vos déclarations fiscales et cotisations sociales.</p>
-            </div>
-            
-            <div class="card">
-                <h3>📊 Saisie</h3>
-                <ul style="margin-left: 20px; line-height: 2;">
-                    <li><strong>Recettes BNC :</strong> Droits d'auteur, commissions, ventes d'œuvres</li>
-                    <li><strong>Recettes TS :</strong> Salaires assimilés (rare pour artistes-auteurs)</li>
-                    <li><strong>Dépenses :</strong> Toutes charges professionnelles déductibles</li>
-                    <li><strong>TVA :</strong> Cochez si vous facturez/payez la TVA à 20%</li>
-                    <li><strong>Récurrence :</strong> Pour les abonnements mensuels</li>
-                </ul>
-            </div>
-            
-            <div class="card">
-                <h3>💶 Gestion TVA</h3>
-                <p><strong>Si vous êtes assujetti à la TVA :</strong></p>
-                <ul style="margin-left: 20px; line-height: 2;">
-                    <li>Cochez "TVA à 20%" pour vos recettes → Montant TTC calculé automatiquement</li>
-                    <li>Cochez "TVA à 20%" pour vos dépenses professionnelles</li>
-                    <li>Le bilan TVA vous indique le montant à payer/récupérer</li>
-                </ul>
-            </div>
-            
-            <div class="card">
-                <h3>📋 Régimes fiscaux</h3>
-                <p><strong>Micro-BNC :</strong> Abattement forfaitaire de 34%, pas de justification des dépenses, plafonné à 77 700€</p>
-                <p><strong>Déclaration contrôlée :</strong> Déduction des frais réels, nécessite justificatifs, avantageux si charges > 34%</p>
-            </div>
-            
-            <div class="alert alert-warning">
-                <strong>⚠️ Important :</strong> Cet outil est une aide à la gestion. Pour toute décision fiscale, consultez un expert-comptable ou votre centre de gestion agréé.
-            </div>
-        </section>
+  <div class="container">
+    <div class="header">
+      <h1>💼 Comptabilité Artiste-Auteur</h1>
+      <p>Gestion simplifiée de vos revenus et charges BNC — sauvegarde multi-appareil via Supabase</p>
     </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        // Configuration
-        const STORE_KEY = 'aa_accounts_v2';
-        let entries = [];
-        let editId = null;
-        
-        // Utilitaires
-        const $ = id => document.getElementById(id);
-        const fmt = n => Number(n).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
-        const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-        
-        // Storage
-        function saveStore() {
-            localStorage.setItem(STORE_KEY, JSON.stringify(entries));
-            renderAll();
-        }
-        
-        function loadStore() {
-            try {
-                const raw = localStorage.getItem(STORE_KEY);
-                entries = raw ? JSON.parse(raw) : [];
-            } catch (e) {
-                console.error('Erreur de chargement', e);
-                entries = [];
-            }
-        }
-        
-        // Gestion des onglets
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabButtons.forEach(b => b.setAttribute('aria-selected', 'false'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                btn.setAttribute('aria-selected', 'true');
-                const panel = $(btn.getAttribute('aria-controls'));
-                if (panel) panel.classList.add('active');
-                if (btn.getAttribute('aria-controls') === 'historique') {
-                    renderHistoryFiltered();
-                }
-                if (btn.getAttribute('aria-controls') === 'synthese' || btn.getAttribute('aria-controls') === 'declaration') {
-                    computeSummaries();
-                }
-            });
-        });
-        
-        // Gestion du formulaire
-        $('entryType').addEventListener('change', () => {
-            const type = $('entryType').value;
-            $('recurrentField').style.display = type === 'depense' ? 'block' : 'none';
-        });
-        
-        $('entryTVA').addEventListener('change', () => {
-            const hasTVA = $('entryTVA').checked;
-            const type = $('entryType').value;
-            
-            if (hasTVA) {
-                $('amountLabel').textContent = 'Montant HT (€) *';
-                $('ttcGroup').classList.remove('hidden');
-            } else {
-                $('amountLabel').textContent = 'Montant (€) *';
-                $('ttcGroup').classList.add('hidden');
-            }
-        });
-        
-        $('entryAmount').addEventListener('input', () => {
-            if ($('entryTVA').checked) {
-                const ht = parseFloat($('entryAmount').value) || 0;
-                $('entryAmountTTC').value = (ht * 1.20).toFixed(2);
-            }
-        });
-        
-        // Soumission du formulaire
-        $('submitBtn').addEventListener('click', submitEntry);
-        $('cancelBtn').addEventListener('click', cancelEdit);
-        
-        function submitEntry() {
-            const date = $('entryDate').value;
-            const type = $('entryType').value;
-            const amount = parseFloat($('entryAmount').value);
-            const description = $('entryDescription').value.trim();
-            const category = $('entryCategory').value;
-            const recurrent = $('entryRecurrent').checked;
-            const hasTVA = $('entryTVA').checked;
-            
-            if (!date) {
-                alert('Date requise');
-                return;
-            }
-            if (!amount || isNaN(amount)) {
-                alert('Montant invalide');
-                return;
-            }
-            
-            const tva = hasTVA ? amount * 0.20 : 0;
-            const ttc = hasTVA ? amount * 1.20 : amount;
-            
-            const item = {
-                id: editId || uid(),
-                date,
-                type,
-                amount,
-                description,
-                category,
-                recurrent,
-                hasTVA,
-                tva,
-                ttc
-            };
-            
-            if (editId) {
-                const idx = entries.findIndex(e => e.id === editId);
-                if (idx > -1) entries[idx] = item;
-                editId = null;
-                $('cancelBtn').style.display = 'none';
-                $('submitBtn').textContent = 'Ajouter';
-            } else {
-                entries.push(item);
-            }
-            
-            clearForm();
-            saveStore();
-            alert('✅ Entrée enregistrée !');
-        }
-        
-        function clearForm() {
-            $('entryDate').value = '';
-            $('entryAmount').value = '';
-            $('entryAmountTTC').value = '';
-            $('entryDescription').value = '';
-            $('entryCategory').value = '';
-            $('entryRecurrent').checked = false;
-            $('entryTVA').checked = false;
-            $('recurrentField').style.display = 'none';
-            $('ttcGroup').classList.add('hidden');
-            $('amountLabel').textContent = 'Montant (€) *';
-        }
-        
-        function cancelEdit() {
-            editId = null;
-            clearForm();
-            $('submitBtn').textContent = 'Ajouter';
-            $('cancelBtn').style.display = 'none';
-        }
-        
-        // Affichage des entrées
-        function renderEntries() {
-            const root = $('entriesList');
-            root.innerHTML = '';
-            
-            if (entries.length === 0) {
-                root.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Aucune entrée pour l\'instant</div>';
-                return;
-            }
-            
-            const sorted = [...entries].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
-            
-            sorted.forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'entry';
-                
-                const isRecette = e.type.startsWith('recette');
-                const amountClass = isRecette ? 'amount-positive' : 'amount-negative';
-                const displayAmount = isRecette ? e.amount : -e.amount;
-                
-                div.innerHTML = `
-                    <div class="entry-info">
-                        <div class="entry-date">${new Date(e.date).toLocaleDateString('fr-FR')}</div>
-                        <div class="entry-description">${escapeHtml(e.description || 'Sans description')} • ${e.category || '—'}</div>
-                        ${e.hasTVA ? '<small style="color: #0066cc;">TVA 20%</small>' : ''}
-                    </div>
-                    <div class="entry-actions">
-                        <div class="${amountClass}">${fmt(displayAmount)}</div>
-                        <button class="btn btn-warning btn-sm" onclick="startEdit('${e.id}')">✏️</button>
-                        <button class="btn btn-danger btn-sm" onclick="removeEntry('${e.id}')">🗑️</button>
-                    </div>
-                `;
-                
-                root.appendChild(div);
-            });
-        }
-        
-        function startEdit(id) {
-            const e = entries.find(x => x.id === id);
-            if (!e) return;
-            
-            editId = id;
-            $('entryDate').value = e.date;
-            $('entryType').value = e.type;
-            $('entryAmount').value = e.amount;
-            $('entryDescription').value = e.description;
-            $('entryCategory').value = e.category;
-            $('entryRecurrent').checked = !!e.recurrent;
-            $('entryTVA').checked = !!e.hasTVA;
-            
-            $('recurrentField').style.display = e.type === 'depense' ? 'block' : 'none';
-            
-            if (e.hasTVA) {
-                $('amountLabel').textContent = 'Montant HT (€) *';
-                $('ttcGroup').classList.remove('hidden');
-                $('entryAmountTTC').value = e.ttc.toFixed(2);
-            }
-            
-            $('submitBtn').textContent = 'Enregistrer';
-            $('cancelBtn').style.display = 'inline-block';
-            
-            document.querySelector('.tab-btn[aria-controls="saisie"]').click();
-            window.scrollTo(0, 0);
-        }
-        
-        function removeEntry(id) {
-            if (!confirm('Supprimer cette entrée ?')) return;
-            entries = entries.filter(e => e.id !== id);
-            saveStore();
-        }
-        
-        // Historique filtré
-        const filterEls = ['filterPeriod', 'filterType'].map(id => $(id));
-        filterEls.forEach(el => el.addEventListener('change', renderHistoryFiltered));
-        
-        function renderHistoryFiltered() {
-            const period = $('filterPeriod').value;
-            const type = $('filterType').value;
-            
-            const filtered = entries.filter(e => {
-                if (type !== 'all' && e.type !== type) return false;
-                
-                if (period === 'all') return true;
-                
-                const now = new Date();
-                const d = new Date(e.date);
-                
-                if (period === 'current-year') return d.getFullYear() === now.getFullYear();
-                if (period === 'last-6-months') {
-                    const past = new Date();
-                    past.setMonth(now.getMonth() - 6);
-                    return d >= past && d <= now;
-                }
-                if (period === 'current-month') {
-                    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-                }
-                
-                return true;
-            });
-            
-            const root = $('historyEntriesList');
-            root.innerHTML = '';
-            
-            if (filtered.length === 0) {
-                root.innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Aucune entrée pour cette période</div>';
-            }
-            
-            filtered.sort((a, b) => b.date.localeCompare(a.date)).forEach(e => {
-                const div = document.createElement('div');
-                div.className = 'entry';
-                
-                const isRecette = e.type.startsWith('recette');
-                const amountClass = isRecette ? 'amount-positive' : 'amount-negative';
-                const displayAmount = isRecette ? e.amount : -e.amount;
-                
-                div.innerHTML = `
-                    <div class="entry-info">
-                        <div class="entry-date">${new Date(e.date).toLocaleDateString('fr-FR')}</div>
-                        <div class="entry-description">${escapeHtml(e.description || 'Sans description')} • ${e.category || '—'}</div>
-                        ${e.hasTVA ? '<small style="color: #0066cc;">TVA 20% | HT: ' + fmt(e.amount) + ' | TTC: ' + fmt(e.ttc) + '</small>' : ''}
-                    </div>
-                    <div class="${amountClass}">${fmt(displayAmount)}</div>
-                `;
-                
-                root.appendChild(div);
-            });
-            
-            const count = filtered.length;
-            const recettes = filtered.filter(x => x.type.startsWith('recette')).reduce((s, x) => s + Number(x.amount), 0);
-            const depenses = filtered.filter(x => x.type === 'depense').reduce((s, x) => s + Number(x.amount), 0);
-            const solde = recettes - depenses;
-            
-            $('historyCount').textContent = count;
-            $('historyRecettes').textContent = fmt(recettes);
-            $('historyDepenses').textContent = fmt(depenses);
-            $('historySolde').textContent = fmt(solde);
-        }
-        
-        // Calcul des synthèses
-        function computeSummaries() {
-            const now = new Date();
-            $('currentYear').textContent = now.getFullYear();
-            
-            let totalBNC = 0;
-            let totalTS = 0;
-            let totalDepenses = 0;
-            let tvaCollectee = 0;
-            let tvaDeductible = 0;
-            
-            entries.forEach(e => {
-                if (e.type === 'recette-bnc') {
-                    totalBNC += e.amount;
-                    if (e.hasTVA) tvaCollectee += e.tva;
-                } else if (e.type === 'recette-ts') {
-                    totalTS += e.amount;
-                } else if (e.type === 'depense') {
-                    totalDepenses += e.amount;
-                    if (e.hasTVA) tvaDeductible += e.tva;
-                }
-            });
-            
-            const tvaAPayer = tvaCollectee - tvaDeductible;
-            
-            const tauxURSSAF = Number($('tauxCotisations').value) / 100;
-            const tauxIRCEC = Number($('tauxIRCEC').value) / 100;
-            const cotURSSAF = totalBNC * tauxURSSAF;
-            const cotIRCEC = totalBNC * tauxIRCEC;
-            const totalCot = cotURSSAF + cotIRCEC;
-            
-            const beneficeBrut = totalBNC - totalDepenses;
-            const beneficeNet = beneficeBrut - totalCot;
-            
-            const regime = $('regimeFiscal').value;
-            let montantDeclaration;
-            
-            if (regime === 'micro') {
-                montantDeclaration = totalBNC;
-                $('regimeInfo').textContent = 'Micro-BNC (abattement 34%)';
-            } else {
-                montantDeclaration = beneficeBrut;
-                $('regimeInfo').textContent = 'Déclaration contrôlée (frais réels)';
-            }
-            
-            $('totalBNC').textContent = fmt(totalBNC);
-            $('totalTS').textContent = fmt(totalTS);
-            $('totalDepenses').textContent = fmt(totalDepenses);
-            $('tvaCollectee').textContent = fmt(tvaCollectee);
-            $('tvaDeductible').textContent = fmt(tvaDeductible);
-            $('beneficeNet').textContent = fmt(beneficeNet);
-            $('cotisationsURSSAF').textContent = fmt(cotURSSAF);
-            $('cotisationsIRCEC').textContent = fmt(cotIRCEC);
-            
-            $('tvaCollecteeSynthese').textContent = fmt(tvaCollectee);
-            $('tvaDeductibleSynthese').textContent = fmt(tvaDeductible);
-            $('tvaAPayer').textContent = fmt(tvaAPayer);
-            
-            $('case5QC').textContent = fmt(montantDeclaration);
-            $('case1GF').textContent = fmt(totalTS);
-            
-            $('tvaCollecteeCA3').textContent = fmt(tvaCollectee);
-            $('tvaDeductibleCA3').textContent = fmt(tvaDeductible);
-            $('tvaAPayerCA3').textContent = fmt(tvaAPayer);
-        }
-        
-        // Export
-        $('exportBtn').addEventListener('click', () => {
-            const format = $('exportFormat').value;
-            const period = $('exportPeriod').value;
-            
-            let filtered = [...entries];
-            
-            if (period === 'current-year') {
-                const y = new Date().getFullYear();
-                filtered = filtered.filter(e => new Date(e.date).getFullYear() === y);
-            } else if (period === 'last-year') {
-                const y = new Date().getFullYear() - 1;
-                filtered = filtered.filter(e => new Date(e.date).getFullYear() === y);
-            }
-            
-            if (format === 'csv') {
-                exportCSV(filtered);
-            } else if (format === 'excel') {
-                exportTSV(filtered);
-            } else {
-                exportJSON(filtered);
-            }
-        });
-        
-        function exportCSV(data) {
-            const header = ['Date', 'Type', 'Montant HT', 'TVA', 'Montant TTC', 'Description', 'Catégorie', 'Récurrent'];
-            const rows = data.map(r => [
-                r.date,
-                r.type,
-                r.amount.toFixed(2),
-                r.hasTVA ? r.tva.toFixed(2) : '0',
-                r.ttc.toFixed(2),
-                `"${(r.description || '').replace(/"/g, '""')}"`,
-                r.category || '',
-                r.recurrent ? 'Oui' : 'Non'
-            ].join(',')).join('\n');
-            
-            const csv = header.join(',') + '\n' + rows;
-            downloadFile(csv, `export_${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
-        }
-        
-        function exportTSV(data) {
-            const header = ['Date', 'Type', 'Montant HT', 'TVA', 'Montant TTC', 'Description', 'Catégorie', 'Récurrent'];
-            const rows = data.map(r => [
-                r.date,
-                r.type,
-                r.amount.toFixed(2),
-                r.hasTVA ? r.tva.toFixed(2) : '0',
-                r.ttc.toFixed(2),
-                r.description || '',
-                r.category || '',
-                r.recurrent ? 'Oui' : 'Non'
-            ].join('\t')).join('\n');
-            
-            const tsv = header.join('\t') + '\n' + rows;
-            downloadFile(tsv, `export_${new Date().toISOString().slice(0, 10)}.tsv`, 'text/tab-separated-values;charset=utf-8;');
-        }
-        
-        function exportJSON(data) {
-            downloadFile(JSON.stringify(data, null, 2), `export_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
-        }
-        
-        function downloadFile(content, filename, mime) {
-            const blob = new Blob([content], { type: mime });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-                a.remove();
-            }, 500);
-        }
-        
-        $('exportJsonBtn').addEventListener('click', () => {
-            downloadFile(JSON.stringify(entries, null, 2), `aa_data_${new Date().toISOString().slice(0, 10)}.json`, 'application/json');
-        });
-        
-        $('exportFiscalBtn').addEventListener('click', () => {
-            let totalBNC = 0, totalTS = 0, totalDepenses = 0, tvaC = 0, tvaD = 0;
-            
-            entries.forEach(e => {
-                if (e.type === 'recette-bnc') {
-                    totalBNC += e.amount;
-                    if (e.hasTVA) tvaC += e.tva;
-                } else if (e.type === 'recette-ts') {
-                    totalTS += e.amount;
-                } else if (e.type === 'depense') {
-                    totalDepenses += e.amount;
-                    if (e.hasTVA) tvaD += e.tva;
-                }
-            });
-            
-            const tvaAPayer = tvaC - tvaD;
-            const regime = $('regimeFiscal').value === 'micro' ? 'Micro-BNC (abattement 34%)' : 'Déclaration contrôlée';
-            
-            const text = `=== SYNTHÈSE FISCALE ARTISTE-AUTEUR ===
-Date: ${new Date().toLocaleDateString('fr-FR')}
 
-RECETTES:
-- Droits d'auteur BNC HT: ${fmt(totalBNC)}
-- TVA collectée: ${fmt(tvaC)}
-- Traitements et Salaires: ${fmt(totalTS)}
+    <!-- AUTH FORM (visible si non connecté) -->
+    <div id="auth" style="margin-bottom:16px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <input id="email" type="email" placeholder="Email" style="flex:1;min-width:220px;padding:10px;border-radius:8px;border:1px solid #ddd;">
+        <input id="password" type="password" placeholder="Mot de passe" style="flex:1;min-width:220px;padding:10px;border-radius:8px;border:1px solid #ddd;">
+        <button id="btnLogin" class="btn" type="button">Se connecter</button>
+        <button id="btnSignup" class="btn" type="button">Créer un compte</button>
+        <button id="btnLogout" class="btn btn-danger hidden" type="button">Se déconnecter</button>
+      </div>
+      <div style="margin-top:8px" class="small muted">Connexion requise pour la sauvegarde multi-appareil. Les données sont aussi mises en cache localement (offline).</div>
+    </div>
 
-CHARGES:
-- Total dépenses HT: ${fmt(totalDepenses)}
-- TVA déductible: ${fmt(tvaD)}
+    <!-- APP : cachée si pas connecté -->
+    <div id="app" class="hidden">
+      <!-- Tabs -->
+      <div class="tabs" role="tablist" aria-label="Navigation principale">
+        <button class="tab-btn" role="tab" aria-controls="saisie" id="tab-saisie" aria-selected="true" type="button">📊 Saisie</button>
+        <button class="tab-btn" role="tab" aria-controls="historique" id="tab-historique" aria-selected="false" type="button">📈 Historique</button>
+        <button class="tab-btn" role="tab" aria-controls="synthese" id="tab-synthese" aria-selected="false" type="button">📋 Synthèse</button>
+        <button class="tab-btn" role="tab" aria-controls="declaration" id="tab-declaration" aria-selected="false" type="button">📄 Déclaration</button>
+        <button class="tab-btn" role="tab" aria-controls="export" id="tab-export" aria-selected="false" type="button">💾 Export</button>
+        <button class="tab-btn" role="tab" aria-controls="parametres" id="tab-parametres" aria-selected="false" type="button">⚙️ Paramètres</button>
+        <button class="tab-btn" role="tab" aria-controls="aide" id="tab-aide" aria-selected="false" type="button">❓ Aide</button>
+      </div>
 
-TVA:
-- TVA à payer: ${fmt(tvaAPayer)}
+      <!-- Onglet Saisie -->
+      <section id="saisie" class="tab-content active" role="tabpanel" aria-labelledby="tab-saisie">
+        <h2>Saisie des recettes et dépenses</h2>
 
-RÉGIME FISCAL: ${regime}
+        <div class="form-row card">
+          <div class="form-col">
+            <label for="entryDate">Date</label>
+            <input id="entryDate" type="date" />
+          </div>
+          <div class="form-col">
+            <label for="entryType">Type</label>
+            <select id="entryType">
+              <option value="recette-bnc">Recette BNC (Droits d'auteur)</option>
+              <option value="recette-ts">Recette TS (Traitements et salaires)</option>
+              <option value="depense">Dépense déductible</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="entryAmount">Montant (€)</label>
+            <input id="entryAmount" type="number" step="0.01" placeholder="0.00" />
+          </div>
+        </div>
 
-DÉCLARATION 2042-C-PRO:
-- Case 5QC/5QI (BNC): ${$('case5QC').textContent}
-- Case 1GF/1JF (TS): ${$('case1GF').textContent}
+        <div class="form-row card">
+          <div class="form-col">
+            <label for="entryDescription">Description</label>
+            <input id="entryDescription" type="text" placeholder="Description de l'opération" />
+          </div>
+          <div class="form-col">
+            <label for="entryCategory">Catégorie</label>
+            <select id="entryCategory">
+              <option value="">Sélectionner...</option>
+              <optgroup label="Recettes BNC">
+                <option value="droits-auteur">Droits d'auteur</option>
+                <option value="commissions">Commissions</option>
+                <option value="autres-bnc">Autres revenus BNC</option>
+              </optgroup>
+              <optgroup label="Recettes TS">
+                <option value="salaires">Salaires</option>
+                <option value="cachets">Cachets</option>
+              </optgroup>
+              <optgroup label="Dépenses">
+                <option value="materiel">Matériel</option>
+                <option value="transport">Transport</option>
+                <option value="formation">Formation</option>
+                <option value="cotisations">Cotisation sociale</option>
+                <option value="licences">Licences</option>
+                <option value="abonnement">Abonnement</option>
+                <option value="divers">Divers</option>
+              </optgroup>
+            </select>
+          </div>
 
-COTISATIONS SOCIALES:
-- URSSAF: ${$('cotisationsURSSAF').textContent}
-- IRCEC: ${$('cotisationsIRCEC').textContent}
-`;
-            
-            downloadFile(text, `synthese_fiscale_${new Date().toISOString().slice(0, 10)}.txt`, 'text/plain;charset=utf-8;');
+          <div class="form-col" id="recurrentField" style="display:none">
+            <label>Récurrence</label>
+            <div style="display:flex;align-items:center;">
+              <input id="entryRecurrent" type="checkbox" style="width:auto;margin-right:8px" />
+              <label for="entryRecurrent" style="margin:0;font-weight:400">Dépense mensuelle récurrente</label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;display:flex;gap:10px;">
+          <button id="submitBtn" class="btn" type="button">Ajouter</button>
+          <button id="cancelBtn" class="btn btn-danger" type="button" style="display:none">Annuler</button>
+        </div>
+
+        <div class="entries-list" id="entriesList" aria-live="polite" style="margin-top:14px"></div>
+      </section>
+
+      <!-- Onglet Historique -->
+      <section id="historique" class="tab-content" role="tabpanel" aria-labelledby="tab-historique">
+        <h2>Historique détaillé des opérations</h2>
+        <div class="form-row card">
+          <div class="form-col">
+            <label for="filterPeriod">Période</label>
+            <select id="filterPeriod">
+              <option value="all">Toute la période</option>
+              <option value="current-year">Année en cours</option>
+              <option value="last-6-months">6 derniers mois</option>
+              <option value="last-3-months">3 derniers mois</option>
+              <option value="current-month">Mois en cours</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="filterType">Type</label>
+            <select id="filterType">
+              <option value="all">Tous types</option>
+              <option value="recette-bnc">Recettes BNC</option>
+              <option value="recette-ts">Recettes TS</option>
+              <option value="depense">Dépenses</option>
+            </select>
+          </div>
+          <div class="form-col">
+            <label for="filterCategory">Catégorie</label>
+            <select id="filterCategory">
+              <option value="all">Toutes catégories</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <h3>📊 Statistiques de la période sélectionnée</h3>
+          <div class="summary-grid">
+            <div class="summary-item"><h4>Nombre d'opérations</h4><div id="historyCount">0</div></div>
+            <div class="summary-item"><h4>Total recettes</h4><div id="historyRecettes">0,00 €</div></div>
+            <div class="summary-item"><h4>Total dépenses</h4><div id="historyDepenses">0,00 €</div></div>
+            <div class="summary-item"><h4>Solde</h4><div id="historySolde">0,00 €</div></div>
+          </div>
+        </div>
+
+        <div class="entries-list" id="historyEntriesList"></div>
+      </section>
+
+      <!-- Onglet Synthèse -->
+      <section id="synthese" class="tab-content" role="tabpanel" aria-labelledby="tab-synthese">
+        <h2>Synthèse annuelle</h2>
+        <div class="summary-card">
+          <h3>📊 Résumé financier <span id="currentYear"></span></h3>
+          <div class="summary-grid">
+            <div class="summary-item"><h4>Recettes BNC</h4><div id="totalBNC">0,00 €</div></div>
+            <div class="summary-item"><h4>Recettes TS</h4><div id="totalTS">0,00 €</div></div>
+            <div class="summary-item"><h4>Total Recettes</h4><div id="totalRecettes">0,00 €</div></div>
+            <div class="summary-item"><h4>Total Dépenses</h4><div id="totalDepenses">0,00 €</div></div>
+            <div class="summary-item"><h4>Bénéfice BNC Brut</h4><div id="beneficeBrut">0,00 €</div></div>
+            <div class="summary-item"><h4>Bénéfice Net</h4><div id="beneficeNet">0,00 €</div></div>
+            <div class="summary-item"><h4>Cotisations URSSAF</h4><div id="cotisationsURSSAF">0,00 €</div></div>
+            <div class="summary-item"><h4>Cotisations IRCEC</h4><div id="cotisationsIRCEC">0,00 €</div></div>
+            <div class="summary-item"><h4>Total Cotisations</h4><div id="totalCotisations">0,00 €</div></div>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <strong>📋 Régime fiscal :</strong> <span id="regimeInfo">Micro-BNC (abattement 34%)</span><br>
+          <strong>💰 Seuil micro-BNC :</strong> 77 700 € (2024)
+        </div>
+      </section>
+
+      <!-- Déclaration -->
+      <section id="declaration" class="tab-content" role="tabpanel" aria-labelledby="tab-declaration">
+        <h2>Montants à reporter</h2>
+        <div class="config-section">
+          <h3>📄 Formulaires fiscaux - Montants calculés</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px">
+            <div style="background:#fff;padding:12px;border-radius:8px;border:1px solid #e0e0e0">
+              <h4>2042-C-PRO</h4>
+              <div class="case-number" style="background:#27ae60;color:#fff;display:inline-block;padding:6px 8px;border-radius:6px;font-weight:700">Case 5QC/5QI</div>
+              <p>Bénéfices non commerciaux (BNC)</p>
+              <div id="case5QC" style="font-size:1.2rem;font-weight:700">0,00 €</div>
+            </div>
+            <div style="background:#fff;padding:12px;border-radius:8px;border:1px solid #e0e0e0">
+              <h4>2042</h4>
+              <div class="case-number" style="background:#27ae60;color:#fff;display:inline-block;padding:6px 8px;border-radius:6px;font-weight:700">Case 1GF/1JF</div>
+              <p>Traitements et salaires (si applicable)</p>
+              <div id="case1GF" style="font-size:1.2rem;font-weight:700">0,00 €</div>
+            </div>
+            <div style="background:#fff;padding:12px;border-radius:8px;border:1px solid #e0e0e0">
+              <h4>Cotisations URSSAF estimées</h4>
+              <div id="cotisationsEstimeesURSSAF" style="font-size:1.2rem;font-weight:700">0,00 €</div>
+            </div>
+            <div style="background:#fff;padding:12px;border-radius:8px;border:1px solid #e0e0e0">
+              <h4>Cotisations IRCEC estimées</h4>
+              <div id="cotisationsEstimeesIRCEC" style="font-size:1.2rem;font-weight:700">0,00 €</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info">
+          <strong>⚠️ Important :</strong> Vérifiez toujours avec votre comptable.
+        </div>
+      </section>
+
+      <!-- Export -->
+      <section id="export" class="tab-content" role="tabpanel" aria-labelledby="tab-export">
+        <h2>Export</h2>
+        <div class="config-section">
+          <h3>📊 Export des opérations</h3>
+          <div class="form-row card">
+            <div class="form-col">
+              <label for="exportFormat">Format</label>
+              <select id="exportFormat"><option value="csv">CSV</option><option value="json">JSON</option><option value="tsv">TSV</option></select>
+            </div>
+            <div class="form-col">
+              <label for="exportPeriod">Période</label>
+              <select id="exportPeriod"><option value="all">Toutes</option><option value="current-year">Année courante</option><option value="last-year">Année précédente</option><option value="custom">Personnalisée</option></select>
+            </div>
+          </div>
+
+          <div class="form-row" id="customPeriodRow" style="display:none">
+            <div class="form-col"><label>Date début</label><input id="exportStartDate" type="date"></div>
+            <div class="form-col"><label>Date fin</label><input id="exportEndDate" type="date"></div>
+          </div>
+
+          <div style="margin-top:12px"><button id="exportBtn" class="btn" type="button">💾 Exporter</button></div>
+        </div>
+
+        <div class="config-section">
+          <h3>📈 Export synthèse</h3>
+          <div class="form-row">
+            <div class="form-col"><button id="exportFiscalBtn" class="btn" type="button">📄 Export synthèse (placeholder)</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Paramètres -->
+      <section id="parametres" class="tab-content" role="tabpanel" aria-labelledby="tab-parametres">
+        <h2>Paramètres</h2>
+        <div class="config-section">
+          <h3>⚙️ Régime fiscal</h3>
+          <div class="form-row">
+            <div class="form-col">
+              <label for="regimeFiscal">Type de régime BNC</label>
+              <select id="regimeFiscal"><option value="micro">Micro-BNC (abattement 34%)</option><option value="reel">Déclaration contrôlée</option></select>
+              <small id="regimeStatus" style="color:#27ae60;display:block;font-weight:700">✅ Régime sauvegardé</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>💼 Taux de cotisations sociales</h3>
+          <div class="form-row">
+            <div class="form-col">
+              <label for="tauxCotisations">Taux URSSAF (%)</label>
+              <input id="tauxCotisations" type="number" value="17.5" step="0.01" />
+              <small>Taux (configurable)</small>
+            </div>
+            <div class="form-col">
+              <label for="tauxIRCEC">Taux IRCEC - RAAP (%)</label>
+              <input id="tauxIRCEC" type="number" value="8.00" step="0.01" />
+              <small>Taux IRCEC (configurable)</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h3>🗂️ Gestion des données</h3>
+          <div class="form-row">
+            <div class="form-col"><button id="exportJsonBtn" class="btn">💾 Exporter JSON local</button></div>
+            <div class="form-col"><input id="importFile" type="file" accept=".json" style="display:none"><button id="importBtn" class="btn">📁 Importer JSON</button></div>
+            <div class="form-col"><button id="clearBtn" class="btn btn-danger">🗑️ Effacer toutes les données</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Aide -->
+      <section id="aide" class="tab-content" role="tabpanel" aria-labelledby="tab-aide">
+        <h2>Mode d'emploi</h2>
+        <div class="help-section"><h3>🎯 Objectif</h3><p>Outil d'aide pour gérer recettes/dépenses BNC. Validez toujours les montants avec un expert-comptable.</p></div>
+      </section>
+    </div>
+  </div>
+
+<!-- =========================
+     JS Application (en bas du body)
+     ========================= -->
+<script>
+/* =========================
+   CONFIG — remplace ces valeurs
+   ========================= */
+const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co'; // <-- replace
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM'; // <-- replace
+/* ========================= */
+const supabase = supabaseJs ? supabaseJs.createClient ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/*
+  NOTES:
+  - Assure-toi d'avoir créé la table 'entries' dans Supabase (SQL fourni ultérieurement).
+  - RLS doit être activé et policy doit permettre aux users de CRUD uniquement sur user_id = auth.uid().
+*/
+
+/* ---------- State & Utils ---------- */
+const STORE_KEY = 'aa_accounts_v1';
+let entries = []; // in-memory cache
+let currentUser = null;
+let editId = null;
+
+const $ = id => document.getElementById(id);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const fmt = n => Number(n || 0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---------- Auth handlers ---------- */
+async function signup() {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  if(!email || !password) return alert('Email + mot de passe requis');
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if(error) return alert('Signup error: ' + error.message);
+  alert('Compte créé. Vérifie ton email si la confirmation est activée.');
+}
+
+async function login() {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  if(!email || !password) return alert('Email + mot de passe requis');
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error) return alert('Login error: ' + error.message);
+  currentUser = data.user;
+  onConnected();
+  await refreshEntries();
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  currentUser = null;
+  onDisconnected();
+}
+
+/* Get current user (wrapper) */
+async function ensureUser() {
+  try {
+    const { data } = await supabase.auth.getUser();
+    currentUser = data?.user ?? null;
+    return currentUser;
+  } catch (e) {
+    console.error('ensureUser error', e);
+    currentUser = null;
+    return null;
+  }
+}
+
+/* Auth state change listener */
+supabase.auth.onAuthStateChange((event, session) => {
+  if(event === 'SIGNED_IN' || session?.user) {
+    currentUser = session?.user ?? currentUser;
+    onConnected();
+    refreshEntries();
+  } else if(event === 'SIGNED_OUT') {
+    currentUser = null;
+    onDisconnected();
+  }
+});
+
+/* UI when connected/disconnected */
+function onConnected() {
+  $('auth').style.display = 'none';
+  $('app').classList.remove('hidden');
+  $('btnLogout').classList.remove('hidden');
+  $('btnLogin').classList.add('hidden');
+  $('btnSignup').classList.add('hidden');
+}
+function onDisconnected() {
+  $('auth').style.display = 'block';
+  $('app').classList.add('hidden');
+  $('btnLogout').classList.add('hidden');
+  $('btnLogin').classList.remove('hidden');
+  $('btnSignup').classList.remove('hidden');
+}
+
+/* ---------- Local storage helpers (fallback) ---------- */
+function saveLocalCache(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(entries)); } catch(e){ console.warn('localStorage save failed', e); }
+}
+function loadLocalCache(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    entries = raw ? JSON.parse(raw) : [];
+  } catch(e){ entries = []; console.warn('local load error', e); }
+}
+
+/* ---------- CRUD with Supabase ---------- */
+async function refreshEntries(){
+  await ensureUser();
+  if(!currentUser){
+    // offline mode or not logged-in: use local cache
+    loadLocalCache();
+    renderAll();
+    return;
+  }
+
+  // fetch server-side
+  const { data, error } = await supabase
+    .from('entries')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('date', { ascending: false });
+
+  if(error){
+    console.error('Supabase fetch error', error);
+    // fallback to local cache
+    loadLocalCache();
+  } else {
+    // normalize and cache
+    entries = (data || []).map(d => ({
+      id: d.id,
+      date: d.date,
+      type: d.type,
+      category: d.category,
+      amount: Number(d.amount || 0),
+      description: d.description || '',
+      recurrent: !!d.recurrent,
+      created_at: d.created_at
+    }));
+    saveLocalCache(); // keep local copy for offline
+  }
+  renderAll();
+}
+
+async function submitEntry(){
+  const date = $('entryDate').value;
+  const type = $('entryType').value;
+  const amount = parseFloat($('entryAmount').value || 0);
+  const description = $('entryDescription').value.trim();
+  const category = $('entryCategory').value;
+  const recurrent = !!$('entryRecurrent').checked;
+
+  if(!date) return alert('Date requise');
+  if(isNaN(amount)) return alert('Montant invalide');
+
+  const payload = {
+    user_id: currentUser?.id || null,
+    date,
+    type,
+    amount,
+    description,
+    category,
+    recurrent
+  };
+
+  // If not logged => local-only
+  if(!currentUser){
+    const localItem = { id: uid(), ...payload, created_at: new Date().toISOString() };
+    entries.unshift(localItem);
+    saveLocalCache();
+    renderAll();
+    clearForm();
+    return alert('Entrée sauvegardée localement (connecte-toi pour la synchroniser).');
+  }
+
+  // Insert server-side
+  const { data, error } = await supabase
+    .from('entries')
+    .insert([payload])
+    .select()
+    .single();
+
+  if(error){
+    console.error('Insert supabase error', error);
+    // fallback local
+    const localItem = { id: uid(), ...payload, created_at: new Date().toISOString() };
+    entries.unshift(localItem);
+    saveLocalCache();
+    renderAll();
+    clearForm();
+    return alert('Erreur enregistrement serveur — sauvegarde locale effectuée.');
+  }
+
+  // success
+  entries.unshift({
+    id: data.id,
+    date: data.date,
+    type: data.type,
+    category: data.category,
+    amount: Number(data.amount),
+    description: data.description,
+    recurrent: data.recurrent,
+    created_at: data.created_at
+  });
+  saveLocalCache();
+  renderAll();
+  clearForm();
+}
+
+async function removeEntry(id){
+  if(!confirm('Supprimer cette entrée ?')) return;
+  // local remove
+  entries = entries.filter(e => String(e.id) !== String(id));
+
+  // if logged, delete server-side
+  if(currentUser){
+    const { error } = await supabase.from('entries').delete().eq('id', id);
+    if(error) console.error('Delete supabase error', error);
+  }
+
+  saveLocalCache();
+  renderAll();
+}
+
+/* Edit flow */
+function startEdit(id){
+  const e = entries.find(x => String(x.id) === String(id));
+  if(!e) return;
+  editId = e.id;
+  $('entryDate').value = e.date;
+  $('entryType').value = e.type;
+  $('entryAmount').value = e.amount;
+  $('entryDescription').value = e.description;
+  $('entryCategory').value = e.category;
+  $('entryRecurrent').checked = !!e.recurrent;
+  $('recurrentField').style.display = e.type === 'depense' ? 'block' : 'none';
+  $('submitBtn').textContent = 'Enregistrer';
+  $('cancelBtn').style.display = 'inline-block';
+  // navigate to saisie
+  document.querySelector('.tab-btn[aria-controls="saisie"]').click();
+}
+
+async function saveEdit(){
+  if(!editId) return;
+  const date = $('entryDate').value;
+  const type = $('entryType').value;
+  const amount = parseFloat($('entryAmount').value || 0);
+  const description = $('entryDescription').value.trim();
+  const category = $('entryCategory').value;
+  const recurrent = !!$('entryRecurrent').checked;
+
+  // update local cache
+  const idx = entries.findIndex(e => String(e.id) === String(editId));
+  if(idx === -1) { editId = null; return; }
+
+  entries[idx] = {...entries[idx], date, type, amount, description, category, recurrent};
+  saveLocalCache();
+
+  // update server if logged
+  if(currentUser){
+    const { error } = await supabase.from('entries').update({
+      date, type, amount, description, category, recurrent
+    }).eq('id', editId);
+    if(error) console.error('Update error', error);
+  }
+
+  editId = null;
+  $('submitBtn').textContent = 'Ajouter';
+  $('cancelBtn').style.display = 'none';
+  clearForm();
+  renderAll();
+}
+
+function cancelEdit(){
+  editId = null;
+  $('submitBtn').textContent = 'Ajouter';
+  $('cancelBtn').style.display = 'none';
+  clearForm();
+}
+
+/* ---------- Rendering / filters ---------- */
+function renderEntries(){
+  const root = $('entriesList');
+  root.innerHTML = '';
+  if(entries.length === 0){ root.innerHTML = '<div style="padding:12px">Aucune entrée pour l’instant.</div>'; return; }
+
+  const copy = [...entries].sort((a,b) => b.date.localeCompare(a.date));
+  copy.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="entry-info">
+        <div class="entry-date">${escapeHtml(e.date)}</div>
+        <div class="entry-description" style="color:#666;margin:5px 0">${escapeHtml(e.description || '')} • <small>${escapeHtml(e.category || '—')}</small></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="${e.amount>=0 ? 'amount-positive' : 'amount-negative'}">${fmt(e.amount)}</div>
+        <button data-action="edit" data-id="${e.id}" class="btn" type="button">✏️</button>
+        <button data-action="delete" data-id="${e.id}" class="btn btn-danger" type="button">🗑️</button>
+      </div>
+    `;
+    root.appendChild(div);
+  });
+
+  // attach handlers
+  root.querySelectorAll('button[data-action]').forEach(b => {
+    b.onclick = () => {
+      const action = b.getAttribute('data-action');
+      const id = b.getAttribute('data-id');
+      if(action === 'edit') startEdit(id);
+      if(action === 'delete') removeEntry(id);
+    };
+  });
+}
+
+function renderHistoryFiltered(){
+  const period = $('filterPeriod').value;
+  const type = $('filterType').value;
+  const category = $('filterCategory').value;
+
+  const list = entries.filter(e => {
+    if(type !== 'all' && e.type !== type) return false;
+    if(category !== 'all' && category !== '' && e.category !== category) return false;
+    if(period === 'all') return true;
+    const now = new Date();
+    const d = new Date(e.date);
+    if(period === 'current-year') return d.getFullYear() === now.getFullYear();
+    if(period === 'last-6-months'){ const past = new Date(); past.setMonth(now.getMonth()-6); return d >= past && d <= now; }
+    if(period === 'last-3-months'){ const past = new Date(); past.setMonth(now.getMonth()-3); return d >= past && d <= now; }
+    if(period === 'current-month') return (d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth());
+    return true;
+  });
+
+  const root = $('historyEntriesList');
+  root.innerHTML = '';
+  if(list.length === 0){ root.innerHTML = '<div style="padding:12px">Aucune entrée</div>'; }
+  list.sort((a,b)=> b.date.localeCompare(a.date)).forEach(e=>{
+    const div=document.createElement('div');
+    div.className='entry';
+    div.innerHTML = `<div class="entry-info"><div class="entry-date">${escapeHtml(e.date)}</div><div class="entry-description">${escapeHtml(e.description||'')} • <small>${escapeHtml(e.category||'—')}</small></div></div><div class="${e.amount>=0 ? 'amount-positive' : 'amount-negative'}">${fmt(e.amount)}</div>`;
+    root.appendChild(div);
+  });
+
+  const count = list.length;
+  const recettes = list.filter(x=> x.type.startsWith('recette')).reduce((s,x)=> s + Number(x.amount),0);
+  const depenses = list.filter(x=> x.type === 'depense').reduce((s,x)=> s + Number(x.amount),0);
+  const solde = recettes - depenses;
+  $('historyCount').textContent = count;
+  $('historyRecettes').textContent = fmt(recettes);
+  $('historyDepenses').textContent = fmt(depenses);
+  $('historySolde').textContent = fmt(solde);
+}
+
+function computeSummaries(){
+  const now = new Date();
+  $('currentYear').textContent = now.getFullYear();
+  const byType = { 'recette-bnc':0, 'recette-ts':0, 'depense':0 };
+  entries.forEach(e => { if(e.type in byType) byType[e.type] += Number(e.amount || 0); });
+
+  const totalRecettes = byType['recette-bnc'] + byType['recette-ts'];
+  const totalDepenses = byType['depense'];
+  const beneficeBrut = byType['recette-bnc'];
+  const cotURSSAF = (Number($('tauxCotisations').value || 0)/100) * beneficeBrut;
+  const cotIRCEC = (Number($('tauxIRCEC').value || 0)/100) * beneficeBrut;
+  const totalCot = cotURSSAF + cotIRCEC;
+  const beneficeNet = beneficeBrut - totalDepenses - totalCot;
+
+  $('totalBNC').textContent = fmt(byType['recette-bnc']);
+  $('totalTS').textContent = fmt(byType['recette-ts']);
+  $('totalRecettes').textContent = fmt(totalRecettes);
+  $('totalDepenses').textContent = fmt(totalDepenses);
+  $('beneficeBrut').textContent = fmt(beneficeBrut);
+  $('cotisationsURSSAF').textContent = fmt(cotURSSAF);
+  $('cotisationsIRCEC').textContent = fmt(cotIRCEC);
+  $('totalCotisations').textContent = fmt(totalCot);
+  $('beneficeNet').textContent = fmt(beneficeNet);
+
+  $('case5QC').textContent = fmt( Math.max(0, beneficeBrut - ( $('regimeFiscal').value === 'micro' ? (beneficeBrut*0.34) : 0 ) ) );
+  $('case1GF').textContent = fmt(byType['recette-ts']);
+  $('cotisationsEstimeesURSSAF').textContent = fmt(cotURSSAF);
+  $('cotisationsEstimeesIRCEC').textContent = fmt(cotIRCEC);
+}
+
+/* ---------- Exports / import ---------- */
+function downloadFile(content, filename, mime='text/plain'){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+function exportCSV(data){
+  const header = ['date','type','amount','description','category','recurrent'];
+  const rows = data.map(r => header.map(h => `"${String(r[h]||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const csv = header.join(',') + '\n' + rows;
+  downloadFile(csv, `export_entries_${new Date().toISOString().slice(0,10)}.csv`, 'text/csv;charset=utf-8;');
+}
+$('exportBtn').addEventListener('click', ()=> {
+  const fmtSel = $('exportFormat').value;
+  const period = $('exportPeriod').value;
+  let filtered = [...entries];
+  if(period === 'current-year'){ const y = new Date().getFullYear(); filtered = filtered.filter(e=> new Date(e.date).getFullYear()===y); }
+  if(period === 'last-year'){ const y = new Date().getFullYear()-1; filtered = filtered.filter(e=> new Date(e.date).getFullYear()===y); }
+  if(period === 'custom'){ const s=$('exportStartDate').value; const t=$('exportEndDate').value; if(s) filtered = filtered.filter(e=> e.date >= s); if(t) filtered = filtered.filter(e=> e.date <= t); }
+  if(fmtSel === 'csv' || fmtSel === 'tsv'){ exportCSV(filtered); } else { downloadFile(JSON.stringify(filtered, null, 2), `export_${new Date().toISOString().slice(0,10)}.json`, 'application/json'); }
+});
+$('exportJsonBtn').addEventListener('click', ()=> downloadFile(JSON.stringify(entries, null, 2), `aa_data_${new Date().toISOString().slice(0,10)}.json`, 'application/json'));
+$('exportFiscalBtn').addEventListener('click', ()=> alert('Export PDF placeholder — intégrer jsPDF si requis.'));
+
+$('importBtn').addEventListener('click', ()=> $('importFile').click());
+$('importFile').addEventListener('change', (ev)=> {
+  const f = ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = (e) => {
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!Array.isArray(parsed)) return alert('Fichier JSON invalide : tableau attendu.');
+      // Basic validation & map
+      const ok = parsed.every(it => it.date && it.amount !== undefined && it.type);
+      if(!ok) return alert('Format JSON invalide (date/type/amount attendus).');
+      // If user logged: push to supabase, else local
+      if(currentUser){
+        // bulk insert (simple)
+        supabase.from('entries').insert(parsed.map(p => ({...p, user_id: currentUser.id}))).then(res => {
+          if(res.error) { console.error(res.error); alert('Import partiel ou erreur serveur.'); }
+          refreshEntries();
         });
-        
-        // Import
-        $('importBtn').addEventListener('click', () => $('importFile').click());
-        
-        $('importFile').addEventListener('change', (ev) => {
-            const f = ev.target.files[0];
-            if (!f) return;
-            
-            const r = new FileReader();
-            r.onload = (e) => {
-                try {
-                    const parsed = JSON.parse(e.target.result);
-                    if (Array.isArray(parsed)) {
-                        const valid = parsed.every(it => it.date && it.amount !== undefined && it.type);
-                        if (!valid) throw new Error('Format invalide');
-                        entries = parsed;
-                        saveStore();
-                        alert('✅ Import réussi !');
-                    } else {
-                        alert('Le fichier JSON doit contenir un tableau');
-                    }
-                } catch (err) {
-                    alert('❌ Erreur d\'import: ' + err.message);
-                }
-            };
-            r.readAsText(f);
-        });
-        
-        // Clear
-        $('clearBtn').addEventListener('click', () => {
-            if (confirm('⚠️ Supprimer toutes les données ? Cette action est irréversible.')) {
-                entries = [];
-                saveStore();
-                alert('✅ Données effacées');
-            }
-        });
-        
-        // Changements de paramètres
-        $('tauxCotisations').addEventListener('change', computeSummaries);
-        $('tauxIRCEC').addEventListener('change', computeSummaries);
-        $('regimeFiscal').addEventListener('change', computeSummaries);
-        
-        // Render all
-        function renderAll() {
-            renderEntries();
-            renderHistoryFiltered();
-            computeSummaries();
-        }
-        
-        function escapeHtml(s) {
-            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-        
-        // Initialisation
-        loadStore();
+      } else {
+        entries = parsed.map(p => ({ id: uid(), ...p, created_at: new Date().toISOString() }));
+        saveLocalCache();
         renderAll();
-        
-        // Date par défaut
-        $('entryDate').value = new Date().toISOString().split('T')[0];
-        
-        console.log('✅ Application chargée - ' + entries.length + ' entrées');
-    </script>
+        alert('Import local effectué (connecte-toi pour synchroniser).');
+      }
+    }catch(err){ alert('Erreur import: ' + err.message); }
+  };
+  r.readAsText(f);
+});
+
+/* ---------- UI interactions ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    btn.setAttribute('aria-selected','true');
+    const panel = document.getElementById(btn.getAttribute('aria-controls'));
+    if(panel) panel.classList.add('active');
+  });
+});
+
+$('entryType').addEventListener('change', ()=> { $('recurrentField').style.display = $('entryType').value === 'depense' ? 'block' : 'none'; });
+
+$('submitBtn').addEventListener('click', async ()=>{
+  if(editId) await saveEdit(); else await submitEntry();
+});
+$('cancelBtn').addEventListener('click', cancelEdit);
+
+$('filterPeriod').addEventListener('change', renderHistoryFiltered);
+$('filterType').addEventListener('change', renderHistoryFiltered);
+$('filterCategory').addEventListener('change', renderHistoryFiltered);
+
+$('btnLogin').addEventListener('click', login);
+$('btnSignup').addEventListener('click', signup);
+$('btnLogout').addEventListener('click', logout);
+
+$('clearBtn').addEventListener('click', ()=> {
+  if(confirm('Supprimer toutes les données locales ? (Ne supprime pas les données serveur)')){ entries = []; saveLocalCache(); renderAll(); alert('Données locales effacées.'); }
+});
+
+/* ---------- Helpers / rendering orchestration ---------- */
+function renderCategoryOptions(){
+  const catSet = new Set(entries.map(e => e.category).filter(Boolean));
+  const sel = $('filterCategory');
+  sel.innerHTML = '<option value="all">Toutes catégories</option>';
+  Array.from(catSet).forEach(c => { const opt = document.createElement('option'); opt.value=c; opt.textContent=c; sel.appendChild(opt); });
+}
+
+function renderAll(){
+  renderEntries();
+  renderHistoryFiltered();
+  computeSummaries();
+  renderCategoryOptions();
+}
+
+/* ---------- lifecycle init ---------- */
+document.addEventListener('DOMContentLoaded', async () => {
+  // ensure sdk is ready
+  await ensureUser();
+  if(currentUser){
+    onConnected();
+  } else {
+    onDisconnected();
+    loadLocalCache();
+  }
+  await refreshEntries();
+});
+
+/* expose for debug */
+window._aa = {
+  entries,
+  refreshEntries,
+  saveLocalCache,
+  supabase
+};
+</script>
 </body>
 </html>
