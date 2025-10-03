@@ -67,14 +67,30 @@
   const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM';
 
-// Sauvegarder la référence à la librairie
-  const _supabaseLib = window.supabase;
-  
-// Créer et assigner l'instance globale
-  window.supabase = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  
-  // Rendre accessible sans window. (optionnel mais utile)
-  var supabase = window.supabase;
+<script>
+  try {
+    // first quick sanity check on the anon key (remove “smart quotes” if present)
+    if (/[“”’]/.test(SUPABASE_ANON_KEY)) {
+      console.error('La clé SUPABASE_ANON_KEY contient des quotes typographiques — remplace par des quotes simples ASCII.');
+    }
+
+    if (typeof supabase === 'undefined') {
+      // Si le CDN ne fournit pas la variable, on log et on évite le crash
+      console.error('Supabase SDK introuvable : vérifie que la balise <script> CDN est chargée et qu\'elle renvoie 200 (Network).');
+      window.supabase = undefined;
+    } else {
+      // Création propre du client (usage officiel)
+      window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // alias pratique
+      window._supabase = window.supabase;
+      console.info('✅ Supabase initialisé correctement.');
+    }
+  } catch (err) {
+    console.error('Erreur lors de l\'initialisation Supabase :', err);
+    window.supabase = undefined;
+  }
+</script>
+
 </script>
 
 
