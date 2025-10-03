@@ -58,18 +58,25 @@
   .hidden{ display:none !important; }
 </style>
 
+<!-- Charger la librairie Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-/* =========================
-   CONFIG — remplace ces valeurs
-   ========================= */
+
+<!-- Initialiser Supabase APRÈS le chargement de la lib -->
 <script>
-	const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co'; // <-- replace
-	const SUPABASE_ANON_KEY = 	'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM	4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM'; // <-- replace
-/* ========================= */
+  // Configuration
+  const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM’;
+
+// Sauvegarder la référence à la librairie
+  const _supabaseLib = window.supabase;
+  
+// Créer et assigner l'instance globale
+  window.supabase = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  
+  // Rendre accessible sans window. (optionnel mais utile)
+  var supabase = window.supabase;
 </script>
-<script>
-	const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
+
 
 
 </head>
