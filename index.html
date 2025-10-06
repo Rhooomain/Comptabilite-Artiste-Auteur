@@ -58,40 +58,45 @@
   .hidden{ display:none !important; }
 </style>
 
-<!-- Charger la librairie Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-
-<!-- Initialiser Supabase APRÈS le chargement de la lib -->
+<!-- ===== Supabase JS (fiable) + init robuste ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
 <script>
-  // Configuration
+  // --- Config (garde tes valeurs) ---
   const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wbGJ1bmJpbmV0cWpmcWZ0dHR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MTAzMDIsImV4cCI6MjA3NDM4NjMwMn0.yKp5bx2Pt7J0ee9QG09OLkuRtH4Lj-a3TiNZAdgHFPM';
 
-<script>
-  try {
-    // first quick sanity check on the anon key (remove “smart quotes” if present)
-    if (/[“”’]/.test(SUPABASE_ANON_KEY)) {
-      console.error('La clé SUPABASE_ANON_KEY contient des quotes typographiques — remplace par des quotes simples ASCII.');
+  // small helper
+  const log = (...a) => console.log('[SUPABASE-INIT]', ...a);
+
+  // Wait for the supabase global to exist (defensive)
+  (function waitForSupabase(retries = 20, interval = 100) {
+    if (typeof window.supabase !== 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        // create client once
+        if (!window._supabaseClient) {
+          window._supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          // expose convenient aliases
+          window.supabaseClient = window._supabaseClient;
+          window.supabaseInstance = window._supabaseClient;
+          log('✅ Supabase loaded and client created.');
+        }
+      } catch (err) {
+        console.error('[SUPABASE-INIT] createClient failed:', err);
+      }
+      return;
     }
 
-    if (typeof supabase === 'undefined') {
-      // Si le CDN ne fournit pas la variable, on log et on évite le crash
-      console.error('Supabase SDK introuvable : vérifie que la balise <script> CDN est chargée et qu\'elle renvoie 200 (Network).');
-      window.supabase = undefined;
-    } else {
-      // Création propre du client (usage officiel)
-      window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      // alias pratique
-      window._supabase = window.supabase;
-      console.info('✅ Supabase initialisé correctement.');
+    // If the CDN returned HTML (404), the script tag still defines window.supabase as undefined.
+    // after a few tries, bail out with a helpful message.
+    if (retries <= 0) {
+      // show user-friendly guidance
+      console.error('[SUPABASE-INIT] Failed to load Supabase JS. Check Network -> supabase.min.js (404?) and that CDN is reachable.');
+      return;
     }
-  } catch (err) {
-    console.error('Erreur lors de l\'initialisation Supabase :', err);
-    window.supabase = undefined;
-  }
+    setTimeout(() => waitForSupabase(retries - 1, interval), interval);
+  })();
 </script>
 
-</script>
 
 
 
