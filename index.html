@@ -59,7 +59,7 @@
 </style>
 
 <!-- ===== Supabase JS (fiable) + init robuste ===== -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // --- Config (garde tes valeurs) ---
   const SUPABASE_URL = 'https://oplbunbinetqjfqftttz.supabase.co';
@@ -78,6 +78,7 @@
           // expose convenient aliases
           window.supabaseClient = window._supabaseClient;
           window.supabaseInstance = window._supabaseClient;
+	window.supabase = window._supabaseClient; // Ajout pour compatibilité
           log('✅ Supabase loaded and client created.');
         }
       } catch (err) {
